@@ -13,10 +13,7 @@ public class NotaViewModel : INotifyPropertyChanged
 
     public NotaViewModel()
     {
-        _note = new()
-        {
-            new() {ID = 1, Name = "nota di prova" }
-        };
+        _note = new();
     }
 
 
@@ -25,10 +22,9 @@ public class NotaViewModel : INotifyPropertyChanged
         get { return new(_note); }
     }
 
-    public void AddNote(string testo)
+    public void AddNote(int id, string testo)
     {
-        var new_id = _note.Count + 1;
-        _note.Add(new Nota() { ID = new_id, Name = testo });
+        _note.Add(new Nota() { ID = id, Name = testo });
         OnPropertyChanged(nameof(Notes));
     }
 

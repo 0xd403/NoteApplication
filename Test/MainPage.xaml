@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+    
+<!-- xmlns:m = assegno alla lettera m il namespace Test a cui posso accedere con m: -->
+<!-- Con DataType specifico il tipo di dato da utilizzare nella pagina che devo specificare nel .cs con il BindingContext-->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:Test.ViewModels"
+             xmlns:n="clr-namespace:Test.Models"
+             x:Class="Test.MainPage"
+             x:DataType="m:NotaViewModel"
+             BackgroundColor="White">
+
+    <VerticalStackLayout 
+            Spacing="20"
+            Margin="15"
+            Padding="30, 30, 30, 30" 
+            VerticalOptions="Center">
+
+        <Label
+            Text="Notes"
+            FontSize="45"
+            TextColor="Red"
+            HorizontalTextAlignment="Center"/>
+
+        <Editor
+            x:Name="Input_noteTxt"
+            Placeholder="Inserisci una nota"
+            HeightRequest="100" 
+            HorizontalTextAlignment="Center"
+            IsTextPredictionEnabled="True"
+            TextColor="Black"/>
+
+        <Grid ColumnDefinitions="70, 30, 70">
+
+            <Button
+                Grid.Column="0"
+                Text="Add"
+                BackgroundColor="LightBlue"
+                TextColor="Black"
+                Clicked="Event_addNote"/>
+
+            <Button
+                Grid.Column="2"
+                Text="Clear"
+                BackgroundColor="Red"
+                TextColor="Black"
+                Clicked="Event_clearForm"/>
+
+        </Grid>
+
+        <Label
+            x:Name="Error_label"
+            TextColor="Red"
+            FontAttributes="Bold"/>
+
+        <CollectionView
+            x:Name="collectionView"
+            ItemsSource="{Binding Notes}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="n:Nota">
+                    <Grid ColumnDefinitions="Auto, 30, Auto" BackgroundColor="LightGray">
+                        <Label
+                            Grid.Column="0"
+                            Text="{Binding ID}"
+                            TextColor="Black"/>
+                        <Label
+                            Grid.Column="2"
+                            Text="{Binding Name}"
+                            TextColor="Black"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </VerticalStackLayout>
+
+</ContentPage>

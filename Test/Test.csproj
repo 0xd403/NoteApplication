@@ -12,10 +12,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 
 		<!-- Display name -->
-		<ApplicationTitle>Test</ApplicationTitle>
+		<ApplicationTitle>Notes</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.test</ApplicationId>
+		<ApplicationId>com.lrivo.notes</ApplicationId>
 		<ApplicationIdGuid>3CD3A94E-4696-45DF-A9E7-3C0D0219B3BE</ApplicationIdGuid>
 
 		<!-- Versions -->

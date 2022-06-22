@@ -24,7 +24,13 @@ public class NotaViewModel : INotifyPropertyChanged
 
     public void AddNote(int id, string testo)
     {
-        _note.Add(new Nota() { ID = id, Name = testo });
+        _note.Add(new Nota() { ID = id, Name = testo, creation=DateTime.Now});
+        OnPropertyChanged(nameof(Notes));
+    }
+
+    public void RemoveNote(int id)
+    {
+        _note.Remove(_note.Find(i => i.ID == id));
         OnPropertyChanged(nameof(Notes));
     }
 

@@ -9,4 +9,7 @@ public class Nota
 
     [JsonPropertyName("text")]
     public string Name { get; set; }
+
+    [JsonPropertyName("createdDate")]
+    public DateTime creation { get; set; }
 }

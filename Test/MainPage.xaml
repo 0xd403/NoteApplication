@@ -60,7 +60,7 @@
             BackgroundColor="Gray">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="n:Nota">
-                    <Grid ColumnDefinitions="Auto, 30, Auto" BackgroundColor="LightGray">
+                    <Grid ColumnDefinitions="Auto, 30, Auto, 30, Auto, 30, 100" BackgroundColor="LightGray">
                         <Label
                             Grid.Column="0"
                             Text="{Binding ID}"
@@ -69,7 +69,18 @@
                             Grid.Column="2"
                             Text="{Binding Name}"
                             TextColor="Black"/>
-                    </Grid>
+						<Label
+                            Grid.Column="4"
+							Text="{Binding creation}"
+							TextColor="Black"/>
+                         <Button
+                            Grid.Column="6"
+                             Text="Delete"
+                             TextColor="Black"
+                             BackgroundColor="Red"
+                             Clicked="Delete_Note"
+                             SemanticProperties.Description="{Binding ID}"/>
+                        </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

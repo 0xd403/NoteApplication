@@ -1,6 +1,7 @@
 ﻿using Test.ViewModels;
-using System.Text;
+using System.Net.Http;
 using System.Text.Json;
+using System.Text;
 using Test.Models;
 
 namespace Test;
@@ -31,9 +32,12 @@ public partial class MainPage : ContentPage {
 		}
 		else
 		{
-			var id = _viewModel.Notes.Count;
-			_viewModel.AddNote(id+1, Input_noteTxt.Text);
-			SyncNotes(_viewModel.Notes[_viewModel.Notes.Count-1]);
+			var new_nota = new Nota() { ID = 0, Name = Input_noteTxt.Text, creation=DateTime.Now };
+            var final_nota = SyncNotes(new_nota);
+			if (final_nota == null)
+				Error_label.Text = "Errore mente aggiungevo la nota";
+			else
+				_viewModel.AddNote(final_nota.ID, final_nota.Name);
         }
 	}
 
@@ -46,7 +50,7 @@ public partial class MainPage : ContentPage {
 	private void FetchNotes()
 	{
 		using var client = new HttpClient();
-		var endpoint = new Uri("https://localhost:5001/api/Home/getNotes");
+		var endpoint = new Uri("https://localhost:5001/api/Registration/getNotes");
 		var result = client.GetAsync(endpoint).Result;
 		var json = result.Content.ReadAsStringAsync().Result;
 		var response = JsonSerializer.Deserialize<List<Nota>>(json);
@@ -56,16 +60,30 @@ public partial class MainPage : ContentPage {
 	}
 
 	// aggiunge una nuova nota sul server
-	private void SyncNotes(Nota newNote)
+	private Nota SyncNotes(Nota newNote)
 	{
 		using var client = new HttpClient();
-        var endpoint = new Uri("https://localhost:5001/api/Home/addNote");
-		HttpContent content = new StringContent(JsonSerializer.Serialize(newNote), Encoding.UTF8, "application/json");
-		var stream = content.ReadAsStream();
-		var response = client.PutAsync(endpoint, content).Result;
-		if (!response.IsSuccessStatusCode)
-		{
-			Error_label.Text = "Errore!" + response.StatusCode;
-		}
+        var endpoint = new Uri("https://localhost:5001/api/Registration/addNote");
+		var json = JsonSerializer.Serialize(newNote);
+		var payload = new StringContent(json, Encoding.UTF8, "application/json");
+		var request = client.PostAsync(endpoint, payload).Result;
+		if (request.IsSuccessStatusCode)
+        {
+			var result = request.Content.ReadAsStringAsync().Result;
+			return JsonSerializer.Deserialize<Nota>(result);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private void Delete_Note(object sender, EventArgs e)
+    {
+		int id = Convert.ToInt32(SemanticProperties.GetDescription(sender as Button));
+        using var client = new HttpClient();
+        var endpoint = new Uri($"https://localhost:5001/api/Registration/deleteNote/{id}");
+		var response = client.DeleteAsync(endpoint).Result;
+		_viewModel.RemoveNote(id);
     }
 }

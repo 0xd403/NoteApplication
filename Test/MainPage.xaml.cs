@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Text;
 using Test.Models;
+using Google.Apis.Auth.OAuth2;
 
 namespace Test;
 
@@ -10,6 +11,8 @@ public partial class MainPage : ContentPage {
 	 
 	// lista di note (da usare nella collection view)
 	private NotaViewModel _viewModel;
+
+	private readonly string api_key = "deeb9b705bfb40119fc4e494fb7b8529";
 
     public MainPage()
 	{
@@ -19,8 +22,9 @@ public partial class MainPage : ContentPage {
 		_viewModel = new();
 		BindingContext = _viewModel; // assegno il contesto di questa pagina alla nota singola e per questo posso usare il binding nella label titolo nel file .xaml
 
-		FetchNotes();
         InitializeComponent(); // disegno l'interfaccia
+		if (!FetchNotes())
+			Error_label.Text = "Impossibile connettersi al server!";
     }
 
 	private void Event_addNote(object sender, EventArgs e)
@@ -32,12 +36,12 @@ public partial class MainPage : ContentPage {
 		}
 		else
 		{
-			var new_nota = new Nota() { ID = 0, Name = Input_noteTxt.Text, creation=DateTime.Now };
+			var new_nota = new Nota() { Name = Input_noteTxt.Text, creation=DateTime.Now };
             var final_nota = SyncNotes(new_nota);
 			if (final_nota == null)
 				Error_label.Text = "Errore mente aggiungevo la nota";
 			else
-				_viewModel.AddNote(final_nota.ID, final_nota.Name);
+				_viewModel.AddNote(new_nota);
         }
 	}
 
@@ -47,23 +51,33 @@ public partial class MainPage : ContentPage {
     }
 
 	// scarica le note dal server
-	private void FetchNotes()
+	private bool FetchNotes()
 	{
 		using var client = new HttpClient();
-		var endpoint = new Uri("https://localhost:5001/api/Registration/getNotes");
-		var result = client.GetAsync(endpoint).Result;
-		var json = result.Content.ReadAsStringAsync().Result;
-		var response = JsonSerializer.Deserialize<List<Nota>>(json);
+		client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", api_key);
+		var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/getNotes");
+		try
+		{
+            var result = client.GetAsync(endpoint).Result;
+            var json = result.Content.ReadAsStringAsync().Result;
+            var response = JsonSerializer.Deserialize<List<Nota>>(json);
 
-		foreach (var i in response)
-			_viewModel.AddNote(i.ID, i.Name);
+            foreach (var i in response)
+                _viewModel.AddNote(i);
+        }
+		catch
+		{
+			return false;
+		}
+		return true;
 	}
 
 	// aggiunge una nuova nota sul server
 	private Nota SyncNotes(Nota newNote)
 	{
 		using var client = new HttpClient();
-        var endpoint = new Uri("https://localhost:5001/api/Registration/addNote");
+        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", api_key);
+        var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/addNote");
 		var json = JsonSerializer.Serialize(newNote);
 		var payload = new StringContent(json, Encoding.UTF8, "application/json");
 		var request = client.PostAsync(endpoint, payload).Result;
@@ -80,9 +94,10 @@ public partial class MainPage : ContentPage {
 
     private void Delete_Note(object sender, EventArgs e)
     {
-		int id = Convert.ToInt32(SemanticProperties.GetDescription(sender as Button));
+		string id = (SemanticProperties.GetDescription(sender as Button));
         using var client = new HttpClient();
-        var endpoint = new Uri($"https://localhost:5001/api/Registration/deleteNote/{id}");
+        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", api_key);
+        var endpoint = new Uri($"https://mynotesapi.azure-api.net/v1/deleteNote/{id}");
 		var response = client.DeleteAsync(endpoint).Result;
 		_viewModel.RemoveNote(id);
     }

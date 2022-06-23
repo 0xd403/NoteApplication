@@ -60,21 +60,13 @@
             BackgroundColor="Gray">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="n:Nota">
-                    <Grid ColumnDefinitions="Auto, 30, Auto, 30, Auto, 30, 100" BackgroundColor="LightGray">
-                        <Label
+                        <Grid ColumnDefinitions="Auto, 30, Auto, 60" BackgroundColor="LightGray">
+                            <Label
                             Grid.Column="0"
-                            Text="{Binding ID}"
-                            TextColor="Black"/>
-                        <Label
-                            Grid.Column="2"
                             Text="{Binding Name}"
                             TextColor="Black"/>
-						<Label
-                            Grid.Column="4"
-							Text="{Binding creation}"
-							TextColor="Black"/>
-                         <Button
-                            Grid.Column="6"
+                            <Button
+                            Grid.Column="2"
                              Text="Delete"
                              TextColor="Black"
                              BackgroundColor="Red"

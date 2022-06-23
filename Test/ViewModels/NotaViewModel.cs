@@ -22,13 +22,13 @@ public class NotaViewModel : INotifyPropertyChanged
         get { return new(_note); }
     }
 
-    public void AddNote(int id, string testo)
+    public void AddNote(Nota new_note)
     {
-        _note.Add(new Nota() { ID = id, Name = testo, creation=DateTime.Now});
+        _note.Add(new_note);
         OnPropertyChanged(nameof(Notes));
     }
 
-    public void RemoveNote(int id)
+    public void RemoveNote(string id)
     {
         _note.Remove(_note.Find(i => i.ID == id));
         OnPropertyChanged(nameof(Notes));

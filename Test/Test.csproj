@@ -12,10 +12,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 
 		<!-- Display name -->
-		<ApplicationTitle>Notes</ApplicationTitle>
+		<ApplicationTitle>MyNotes</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.lrivo.notes</ApplicationId>
+		<ApplicationId>com.lrivo.mynotes</ApplicationId>
 		<ApplicationIdGuid>3CD3A94E-4696-45DF-A9E7-3C0D0219B3BE</ApplicationIdGuid>
 
 		<!-- Versions -->
@@ -32,10 +32,10 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5E2AB" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -49,8 +49,24 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Fonts\CollegiateBlackFLF.ttf" />
+	  <None Remove="Resources\Fonts\CollegiateBorderFLF.ttf" />
+	  <None Remove="Resources\Fonts\CollegiateFLF.ttf" />
+	  <None Remove="Resources\Fonts\CollegiateInsideFLF.ttf" />
+	  <None Remove="Resources\Fonts\CollegiateOutlineFLF.ttf" />
+	  <None Remove="Resources\Images\add.svg" />
+	  <None Remove="Resources\Images\edit.svg" />
+	  <None Remove="Resources\Images\remove.svg" />
+	  <None Remove="Resources\Splash\splash.svg" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <PackageReference Include="Google.Apis.Auth" Version="1.57.0" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Pages\" />
 	</ItemGroup>
 
 </Project>

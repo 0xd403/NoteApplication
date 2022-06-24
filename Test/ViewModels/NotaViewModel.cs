@@ -1,19 +1,34 @@
+using AndroidX.Lifecycle;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Text;
+using System.Text.Json;
 using Test.Models;
 
 namespace Test.ViewModels;
 
-public class NotaViewModel : INotifyPropertyChanged
+public class NotaViewModel : INotifyPropertyChanged, IDisposable
 {
+
+    public event PropertyChangedEventHandler PropertyChanged;
 
     private List<Nota> _note;
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    private HttpClient client;
+
+    private readonly string api_key = "deeb9b705bfb40119fc4e494fb7b8529";
 
     public NotaViewModel()
     {
         _note = new();
+        client = new HttpClient();
+        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", api_key);
+    }
+
+    public void Dispose()
+    {
+        client.Dispose(); // elimina l'HttpClient quando passa il garbage collector
+        GC.SuppressFinalize(this);
     }
 
 
@@ -22,16 +37,107 @@ public class NotaViewModel : INotifyPropertyChanged
         get { return new(_note); }
     }
 
-    public void AddNote(Nota new_note)
+    /// <summary>
+    /// Carica le note all'avvio dell'applicazione
+    /// </summary>
+    public void LoadStartupNotes()
     {
-        _note.Add(new_note);
-        OnPropertyChanged(nameof(Notes));
+        var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/getNotes");
+        var result = client.GetAsync(endpoint).Result;
+
+        if (result.IsSuccessStatusCode)
+        {
+            var json = result.Content.ReadAsStringAsync().Result;
+            var response = JsonSerializer.Deserialize<List<Nota>>(json);
+
+            foreach (var i in response)
+                _note.Add(i);
+
+            OnPropertyChanged(nameof(Notes));
+        }
+        else
+        {
+            // Gestione errore
+        }
     }
 
+    /// <summary>
+    /// Aggiunge una nuova nota e aggiorna la CollectionView
+    /// </summary>
+    /// <param name="new_note"></param>
+    public void AddNote(Nota new_note)
+    {
+        var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/addNote");
+        var json = JsonSerializer.Serialize(new_note);
+        var payload = new StringContent(json, Encoding.UTF8, "application/json");
+        var request = client.PostAsync(endpoint, payload).Result;
+
+        if (request.IsSuccessStatusCode)
+        {
+            _note.Add(new_note);
+            OnPropertyChanged(nameof(Notes));
+        }
+        else
+        {
+            // gestione errore
+        }  
+    }
+
+    /// <summary>
+    /// Rimuove una nota e aggiorna il CollectionView
+    /// </summary>
+    /// <param name="id"></param>
     public void RemoveNote(string id)
     {
-        _note.Remove(_note.Find(i => i.ID == id));
-        OnPropertyChanged(nameof(Notes));
+        var endpoint = new Uri($"https://mynotesapi.azure-api.net/v1/deleteNote/{id}");
+        var response = client.DeleteAsync(endpoint).Result;
+
+        if (response.IsSuccessStatusCode)
+        {
+            _note.Remove(_note.Find(i => i.ID == id));
+            OnPropertyChanged(nameof(Notes));
+        }
+        else
+        {
+            // gestione errore
+        }
+    }
+
+    /// <summary>
+    /// Permette di modificare il testo di una nota esistente dato il suo Id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="new_text"></param>
+    public void EditNote(string id, string new_text)
+    {
+        var note = _note.Find(i => i.ID == id);
+
+        if (note != null)
+        {
+            var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/editNote");
+            var json = JsonSerializer.Serialize<Nota>(new Nota() { ID=id, Name=new_text, creation=DateTime.Now});
+            var payload = new StringContent(json, Encoding.UTF8, "application/json");
+            var request = client.PostAsync(endpoint, payload).Result;
+
+            if (request.IsSuccessStatusCode)
+            {
+                var reponse = request.Content.ReadAsStringAsync().Result;
+                var deserialized_note = JsonSerializer.Deserialize<Nota>(reponse);
+                note.ID = deserialized_note.ID;
+                note.Name = deserialized_note.Name;
+                note.creation = deserialized_note.creation;
+                OnPropertyChanged(nameof(Notes));
+            }
+            else
+            {
+                // Gestione errore
+            }
+            
+        }
+        else
+        {
+            // Nota inesistente
+        }
     }
 
     private void OnPropertyChanged(String property)
@@ -40,4 +146,5 @@ public class NotaViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 
+    
 }

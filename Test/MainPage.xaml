@@ -7,76 +7,76 @@
              xmlns:m="clr-namespace:Test.ViewModels"
              xmlns:n="clr-namespace:Test.Models"
              x:Class="Test.MainPage"
-             x:DataType="m:NotaViewModel"
-             BackgroundColor="LightBlue">
+             x:DataType="m:NotaViewModel">
 
+    <Grid
+        Margin="10" RowSpacing="10">
 
-    <VerticalStackLayout 
-            Spacing="20"
-            Margin="15"
-            Padding="30, 30, 30, 30" 
-            VerticalOptions="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="55" />
+        </Grid.RowDefinitions>
 
         <Label
+            Grid.Row="0"
             Text="Notes"
-            FontSize="45"
+            FontSize="50"
+            FontFamily="CollegiateBlackFLF"
             TextColor="Red"
             HorizontalTextAlignment="Center"/>
 
-        <Editor
-            x:Name="Input_noteTxt"
-            Placeholder="Inserisci una nota"
-            HeightRequest="100" 
-            HorizontalTextAlignment="Center"
-            IsTextPredictionEnabled="True"
-            TextColor="Black"/>
-
-        <Grid ColumnDefinitions="70, 30, 70">
-
-            <Button
-                Grid.Column="0"
-                Text="Add"
-                BackgroundColor="Yellow"
-                TextColor="Black"
-                Clicked="Event_addNote"/>
-
-            <Button
-                Grid.Column="2"
-                Text="Clear"
-                BackgroundColor="Red"
-                TextColor="Black"
-                Clicked="Event_clearForm"/>
-
-        </Grid>
-
-        <Label
-            x:Name="Error_label"
-            TextColor="Red"
-            FontAttributes="Bold"/>
-    <ScrollView>
-        <CollectionView
+        <CollectionView            
+            Grid.Row="1"            
             x:Name="collectionView"
-            ItemsSource="{Binding Notes}"
-            BackgroundColor="Gray">
+            ItemsSource="{Binding Notes}">
+            
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="n:Nota">
-                        <Grid ColumnDefinitions="Auto, 30, Auto, 60" BackgroundColor="LightGray">
-                            <Label
+                    <Grid 
+                        Margin="0,5,0,0"
+                        ColumnSpacing="10"
+                        ColumnDefinitions="*, Auto, Auto"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+                        <Label
                             Grid.Column="0"
+                            Margin="10,0,0,0"
                             Text="{Binding Name}"
-                            TextColor="Black"/>
-                            <Button
+                            TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                            HorizontalOptions="StartAndExpand" 
+                            VerticalOptions="Center"/>
+                        <ImageButton
+                            Scale="0.4"
+                            Grid.Column="1"
+                            Margin="0,0,1,0"
+                            Source="edit.svg"
+                            Clicked="Edit_Note"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            SemanticProperties.Description="{Binding ID}"/>
+                        <ImageButton
+                            Scale="0.8"
                             Grid.Column="2"
-                             Text="Delete"
-                             TextColor="Black"
-                             BackgroundColor="Red"
-                             Clicked="Delete_Note"
-                             SemanticProperties.Description="{Binding ID}"/>
-                        </Grid>
+                            Margin="0,0,2,0"
+                            Source="remove.svg"
+                            Clicked="Delete_Note"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            SemanticProperties.Description="{Binding ID}"/>
+                    </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-    </ScrollView>
-    </VerticalStackLayout>
 
+        <ImageButton
+            Grid.Row="0"
+            Grid.RowSpan="99"
+            Scale="0.85"
+            Source="add.svg"
+            HorizontalOptions="End"
+            VerticalOptions="End"
+            Clicked="Event_addNote">
+        </ImageButton>
+
+    </Grid>
 </ContentPage>

@@ -22,6 +22,11 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public EventHandler<string>? OnStartDelete;
 
+    /// <summary>
+    /// Viene chiamato quando si verifica un errore
+    /// </summary>
+    public EventHandler<string>? OnError;
+
     private List<Note> _note;
 
     private HttpClient client;
@@ -53,30 +58,52 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     public ICommand EditNoteCommand => new Command<Note>(
     (e) => OnStartModify?.Invoke(null, e));
 
+    /// <summary>
+    /// Viene chiamato alla pressione del tasto remove nella MainPage e chiama l'evento OnStartDelete
+    /// </summary>
     public ICommand DeleteNoteCommand => new Command<string>(
         (e) => OnStartDelete?.Invoke(null, e));
+
+    /// <summary>
+    /// Chiama l'evento OnError con eventuali parametri
+    /// </summary>
+    /// <param name="args"></param>
+    private void ThrowErrorEvent(string args)
+    {
+        OnError?.Invoke(null, args);
+    }
 
     /// <summary>
     /// Carica le note all'avvio dell'applicazione
     /// </summary>
     public void LoadStartupNotes()
     {
-        var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/getNotes");
-        var result = client.GetAsync(endpoint).Result;
-
-        if (result.IsSuccessStatusCode)
+        HttpResponseMessage result = null;
+        try
         {
-            var json = result.Content.ReadAsStringAsync().Result;
-            var response = JsonSerializer.Deserialize<List<Note>>(json);
-
-            foreach (var i in response)
-                _note.Add(i);
-
-            OnPropertyChanged(nameof(Notes));
+            var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/getNotes");
+            result = client.GetAsync(endpoint).Result;
         }
-        else
+        catch
         {
-            // Gestione errore
+            ThrowErrorEvent("Impossibile connettersi a internet");
+        }
+        finally
+        {
+            if (result.IsSuccessStatusCode)
+            {
+                var json = result.Content.ReadAsStringAsync().Result;
+                var response = JsonSerializer.Deserialize<List<Note>>(json);
+
+                foreach (var i in response)
+                    _note.Add(i);
+
+                OnPropertyChanged(nameof(Notes));
+            }
+            else
+            {
+                ThrowErrorEvent("Impossibile caricare le note");
+            }
         }
     }
 
@@ -98,7 +125,7 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         }
         else
         {
-            // gestione errore
+            ThrowErrorEvent("Impossibile aggiungere la nota");
         }  
     }
 
@@ -118,7 +145,7 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         }
         else
         {
-            // gestione errore
+            ThrowErrorEvent("Impossibile rimuovere la nota");
         }
     }
 
@@ -149,13 +176,13 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
             }
             else
             {
-                // Gestione errore
+                ThrowErrorEvent("Impossibile modificare la nota");
             }
             
         }
         else
         {
-            // Nota inesistente
+            ThrowErrorEvent("Nota inesistente");
         }
     }
 

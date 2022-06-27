@@ -1,7 +1,6 @@
 ﻿using Test.ViewModels;
 using Test.Pages;
 using Test.Models;
-using System.Windows.Input;
 
 namespace Test;
 
@@ -10,13 +9,14 @@ public partial class MainPage : ContentPage, IDisposable
 	 
 	// reference al wiewmodel che gestisce la CollectionView di note
 	private NotaViewModel _viewModel;
-    private NoteFullViewModel? _noteFullViewModel;
+    private NoteFullViewModel _noteFullViewModel;
 
     public MainPage()
 	{
 		_viewModel = new();
         _viewModel.OnStartModify += ManageEditNote;
         _viewModel.OnStartDelete += ManageDeleteNote;
+        _viewModel.OnError += ManageOnError;
 
         _noteFullViewModel = new();
         _noteFullViewModel.OnConfirm += ManageOnConfirm;
@@ -30,6 +30,34 @@ public partial class MainPage : ContentPage, IDisposable
 
 		_viewModel.LoadStartupNotes(); // carico le note dal server    
     }
+
+    public void Dispose()
+    {
+        _viewModel.OnStartModify -= ManageEditNote;
+        _viewModel.OnStartDelete -= ManageDeleteNote;
+        _viewModel.OnError -= ManageOnError;
+
+        _noteFullViewModel.OnConfirm -= ManageOnConfirm;
+        _noteFullViewModel.OnExit -= ManageOnExit;
+
+        GC.SuppressFinalize(this);
+    }
+
+
+    /// <summary>
+    /// Permette di aggiungere una nuova nota.
+    /// - Viene chiamato alla pressione del tasto + sulla MainPage
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private async void Event_addNote(object sender, EventArgs e)
+    {
+        _noteFullViewModel.NewNote = true;
+        _noteFullViewModel.CurrentNote = new();
+        var page = new NoteFullView(_noteFullViewModel);
+        await Navigation.PushAsync(page);
+    }
+
 
     /// <summary>
     /// Chiamato alla ricezione dell'evento OnStartModify di NotaViewModel
@@ -45,28 +73,6 @@ public partial class MainPage : ContentPage, IDisposable
         await Navigation.PushAsync(page);
     }
 
-    /// <summary>
-    /// Chiamato alla ricezione dell'evento OnStartDelte di NotaViewModel
-    /// Procederà ad eliminare la nota tramite il metodo RemoveNote di NotaViewModel
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="id"></param>
-    private async void ManageDeleteNote(object sender, string id)
-    {
-        _viewModel.RemoveNote(id);
-        await DisplayAlert("Avviso", "Nota rimossa correttamente", "OK");
-    }
-
-    /// <summary>
-    /// Chiamato alla ricezione dell'evento OnExit di NotaFullViewModel
-    /// Chiuderà la pagina NoteFullView
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private async void ManageOnExit(object sender, EventArgs e)
-    {
-        await Navigation.PopAsync();
-    }
 
     /// <summary>
     /// Chiamato alla ricezione dell'evento OnConfirm di NotaFullViewModel
@@ -93,27 +99,39 @@ public partial class MainPage : ContentPage, IDisposable
         await DisplayAlert("Avviso", $"Nota {messaggio} correttamente", "OK");
     }
 
-    public void Dispose()
-    {
-        _noteFullViewModel.OnConfirm -= ManageOnConfirm;
-        _noteFullViewModel.OnExit -= ManageOnExit;
-        _viewModel.OnStartModify -= ManageEditNote;
-        GC.SuppressFinalize(this);
-    }
-
-
 
     /// <summary>
-    /// Permette di aggiungere una nuova nota.
-    /// - Viene chiamato alla pressione del tasto + sulla MainPage
+    /// Chiamato alla ricezione dell'evento OnExit di NotaFullViewModel
+    /// Chiuderà la pagina NoteFullView
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private async void Event_addNote(object sender, EventArgs e)
+    private async void ManageOnExit(object sender, EventArgs e)
     {
-        _noteFullViewModel.NewNote = true;
-        _noteFullViewModel.CurrentNote = new();
-        var page = new NoteFullView(_noteFullViewModel);
-        await Navigation.PushAsync(page);
+        await Navigation.PopAsync();
     }
+
+
+    /// <summary>
+    /// Chiamato alla ricezione dell'evento OnStartDelte di NotaViewModel
+    /// Procederà ad eliminare la nota tramite il metodo RemoveNote di NotaViewModel
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="id"></param>
+    private async void ManageDeleteNote(object sender, string id)
+    {
+        _viewModel.RemoveNote(id);
+        await DisplayAlert("Avviso", "Nota rimossa correttamente", "OK");
+    }
+
+    /// <summary>
+    /// Gestore dell'evento OnError
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="args"></param>
+    private async void ManageOnError(object sender, string args)
+    {
+        await DisplayAlert("Errore", args, "OK");
+    }
+
 }

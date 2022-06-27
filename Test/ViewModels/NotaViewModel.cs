@@ -1,8 +1,8 @@
-using AndroidX.Lifecycle;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Input;
 using Test.Models;
 
 namespace Test.ViewModels;
@@ -12,7 +12,17 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
 
     public event PropertyChangedEventHandler PropertyChanged;
 
-    private List<Nota> _note;
+    /// <summary>
+    /// Viene chiamato quando l'utente inizia la modifica di una nota cliccando il tasto edit (icona matita) della MainPage
+    /// </summary>
+    public event EventHandler<Note>? OnStartModify;
+
+    /// <summary>
+    /// Viene chiamato quando l'utente inizia la rimozione di una nota cliccando il tasto remove (icona corce) della MainPage
+    /// </summary>
+    public EventHandler<string>? OnStartDelete;
+
+    private List<Note> _note;
 
     private HttpClient client;
 
@@ -32,10 +42,19 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     }
 
 
-    public ObservableCollection<Nota> Notes
+    public ObservableCollection<Note> Notes
     {
         get { return new(_note); }
     }
+
+    /// <summary>
+    /// Viene chiamato alla pressione del tasto edit (icona matita) nella MainPage e chiama l'evento OnStartModify
+    /// </summary>
+    public ICommand EditNoteCommand => new Command<Note>(
+    (e) => OnStartModify?.Invoke(null, e));
+
+    public ICommand DeleteNoteCommand => new Command<string>(
+        (e) => OnStartDelete?.Invoke(null, e));
 
     /// <summary>
     /// Carica le note all'avvio dell'applicazione
@@ -48,7 +67,7 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         if (result.IsSuccessStatusCode)
         {
             var json = result.Content.ReadAsStringAsync().Result;
-            var response = JsonSerializer.Deserialize<List<Nota>>(json);
+            var response = JsonSerializer.Deserialize<List<Note>>(json);
 
             foreach (var i in response)
                 _note.Add(i);
@@ -65,7 +84,7 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     /// Aggiunge una nuova nota e aggiorna la CollectionView
     /// </summary>
     /// <param name="new_note"></param>
-    public void AddNote(Nota new_note)
+    public void AddNote(Note new_note)
     {
         var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/addNote");
         var json = JsonSerializer.Serialize(new_note);
@@ -94,7 +113,7 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
 
         if (response.IsSuccessStatusCode)
         {
-            _note.Remove(_note.Find(i => i.ID == id));
+            _note.Remove(_note.Find(i => i.Id == id));
             OnPropertyChanged(nameof(Notes));
         }
         else
@@ -110,22 +129,22 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     /// <param name="new_text"></param>
     public void EditNote(string id, string new_text)
     {
-        var note = _note.Find(i => i.ID == id);
+        var note = _note.Find(i => i.Id == id);
 
         if (note != null)
         {
             var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/editNote");
-            var json = JsonSerializer.Serialize<Nota>(new Nota() { ID=id, Name=new_text, creation=DateTime.Now});
+            var json = JsonSerializer.Serialize<Note>(new Note() { Id=id, Text=new_text, CreatedDate=DateTime.Now});
             var payload = new StringContent(json, Encoding.UTF8, "application/json");
             var request = client.PostAsync(endpoint, payload).Result;
 
             if (request.IsSuccessStatusCode)
             {
                 var reponse = request.Content.ReadAsStringAsync().Result;
-                var deserialized_note = JsonSerializer.Deserialize<Nota>(reponse);
-                note.ID = deserialized_note.ID;
-                note.Name = deserialized_note.Name;
-                note.creation = deserialized_note.creation;
+                var deserialized_note = JsonSerializer.Deserialize<Note>(reponse);
+                note.Id = deserialized_note.Id;
+                note.Text = deserialized_note.Text;
+                note.CreatedDate = deserialized_note.CreatedDate;
                 OnPropertyChanged(nameof(Notes));
             }
             else
@@ -146,5 +165,4 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     }
 
-    
 }

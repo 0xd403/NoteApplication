@@ -6,6 +6,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:m="clr-namespace:Test.ViewModels"
              xmlns:n="clr-namespace:Test.Models"
+             xmlns:pages="clr-namespace:Test.Pages"
              x:Class="Test.MainPage"
              x:DataType="m:NotaViewModel">
 
@@ -32,17 +33,17 @@
             ItemsSource="{Binding Notes}">
             
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="n:Nota">
+                <DataTemplate x:DataType="n:Note">
                     <Grid 
                         Margin="0,5,0,0"
                         ColumnSpacing="10"
                         ColumnDefinitions="*, Auto, Auto"
-                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+                        BackgroundColor="LightGoldenrodYellow">
                         <Label
                             Grid.Column="0"
                             Margin="10,0,0,0"
-                            Text="{Binding Name}"
-                            TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                            Text="{Binding Text}"
+                            TextColor="Black"
                             HorizontalOptions="StartAndExpand" 
                             VerticalOptions="Center"/>
                         <ImageButton
@@ -50,19 +51,22 @@
                             Grid.Column="1"
                             Margin="0,0,1,0"
                             Source="edit.svg"
-                            Clicked="Edit_Note"
+                            Command="{Binding EditNoteCommand, Source={RelativeSource AncestorType={x:Type m:NotaViewModel}}}"
+                            CommandParameter="{Binding .}"
                             HorizontalOptions="End"
                             VerticalOptions="Center"
-                            SemanticProperties.Description="{Binding ID}"/>
+                            SemanticProperties.Description="{Binding Id}"
+                            SemanticProperties.Hint="{Binding Text}"/>
                         <ImageButton
                             Scale="0.8"
                             Grid.Column="2"
                             Margin="0,0,2,0"
                             Source="remove.svg"
-                            Clicked="Delete_Note"
+                            Command="{Binding DeleteNoteCommand, Source={RelativeSource AncestorType={x:Type m:NotaViewModel}}}"
+                            CommandParameter="{Binding Id}"
                             HorizontalOptions="End"
                             VerticalOptions="Center"
-                            SemanticProperties.Description="{Binding ID}"/>
+                            SemanticProperties.Description="{Binding Id}"/>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

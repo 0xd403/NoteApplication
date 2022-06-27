@@ -4,11 +4,24 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Test"
-    Shell.FlyoutBehavior="Disabled">
+    xmlns:pages="clr-namespace:Test.Pages"
+    Shell.FlyoutBehavior="Flyout">
 
-    <ShellContent
-        Title="MyNotes"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <FlyoutItem 
+        Title="MainPage" 
+        FlyoutIcon="">
+        
+            <ShellContent
+                Title="MainPage"
+                ContentTemplate="{DataTemplate local:MainPage}"
+                Route="MainPage"/>
+    
+    </FlyoutItem>
+
+    <FlyoutItem
+        Title="Login"
+        FlyoutIcon="">
+
+    </FlyoutItem>
 
 </Shell>

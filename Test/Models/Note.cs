@@ -3,15 +3,15 @@ using System.Text.Json.Serialization;
 
 namespace Test.Models;
 
-public class Nota
+public class Note
 {
     [MaxLength(36)]
     [JsonPropertyName("id")]
-    public string ID { get; set; } = Guid.NewGuid().ToString("D");
+    public string Id { get; set; } = Guid.NewGuid().ToString("D");
 
     [JsonPropertyName("text")]
-    public string Name { get; set; } = "";
+    public string Text { get; set; } = "";
 
     [JsonPropertyName("createdDate")]
-    public DateTime creation { get; set; }
+    public DateTime CreatedDate { get; set; } = DateTime.Now; 
 }

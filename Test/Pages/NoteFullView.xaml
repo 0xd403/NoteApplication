@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Test.Models"
+             xmlns:vm="clr-namespace:Test.ViewModels"
+             x:Class="Test.Pages.NoteFullView"
+             x:DataType="vm:NoteFullViewModel"
+             Title="Inserisci una nota">
+    <Grid
+        Margin="20"
+        RowSpacing="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Editor
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            x:Name="NoteText"
+            Text="{Binding CurrentNote.Text}"
+            BackgroundColor="White"
+            TextColor="Black"
+            HorizontalTextAlignment="Center"
+            HorizontalOptions="CenterAndExpand"
+            HeightRequest="250"
+            Placeholder="Inserisci il testo della nota"/>
+
+        <Button
+            Grid.Row="1"
+            Grid.Column="0"
+            HorizontalOptions="FillAndExpand"
+            Text="Conferma"
+            BackgroundColor="Green"
+            TextColor="Black"
+            Command="{Binding ConfirmCommand}"/>
+
+        <Button
+            Grid.Row="1"
+            Grid.Column="1"
+            HorizontalOptions="FillAndExpand"
+            Text="Annulla"
+            Command="{Binding ExitCommand}"
+            BackgroundColor="Red"
+            TextColor="Black"/>
+
+    </Grid>
+</ContentPage>

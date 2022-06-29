@@ -1,6 +1,6 @@
 ﻿using Test.ViewModels;
 using Test.Pages;
-using Test.Models;
+using NotesContracts;
 
 namespace Test;
 
@@ -16,11 +16,12 @@ public partial class MainPage : ContentPage, IDisposable
 		_viewModel = new();
         _viewModel.OnStartModify += ManageEditNote;
         _viewModel.OnStartDelete += ManageDeleteNote;
-        _viewModel.OnError += ManageOnError;
+        _viewModel.OnConnectionError += ManageOnError;
 
         _noteFullViewModel = new();
         _noteFullViewModel.OnConfirm += ManageOnConfirm;
         _noteFullViewModel.OnExit += ManageOnExit;
+        _noteFullViewModel.OnInsertError += ManageOnError;
 
 
         // indica che nel Binding del file .xaml potrò utilizzare il tipo Nota
@@ -35,10 +36,11 @@ public partial class MainPage : ContentPage, IDisposable
     {
         _viewModel.OnStartModify -= ManageEditNote;
         _viewModel.OnStartDelete -= ManageDeleteNote;
-        _viewModel.OnError -= ManageOnError;
+        _viewModel.OnConnectionError -= ManageOnError;
 
         _noteFullViewModel.OnConfirm -= ManageOnConfirm;
         _noteFullViewModel.OnExit -= ManageOnExit;
+        _noteFullViewModel.OnInsertError -= ManageOnError;
 
         GC.SuppressFinalize(this);
     }
@@ -52,10 +54,17 @@ public partial class MainPage : ContentPage, IDisposable
     /// <param name="e"></param>
     private async void Event_addNote(object sender, EventArgs e)
     {
-        _noteFullViewModel.NewNote = true;
-        _noteFullViewModel.CurrentNote = new();
-        var page = new NoteFullView(_noteFullViewModel);
-        await Navigation.PushAsync(page);
+        try
+        {
+            _noteFullViewModel.NewNote = true;
+            _noteFullViewModel.CurrentNote = new();
+            var page = new NoteFullView(_noteFullViewModel);
+            await Navigation.PushAsync(page);
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception.StackTrace);
+        }
     }
 
 
@@ -92,7 +101,7 @@ public partial class MainPage : ContentPage, IDisposable
         else
         {
             messaggio = "aggiornata";
-            _viewModel.EditNote(values.Note.Id, values.Note.Text);
+            _viewModel.EditNote(values.Note);
         }
 
         await Navigation.PopAsync();
@@ -118,20 +127,20 @@ public partial class MainPage : ContentPage, IDisposable
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="id"></param>
-    private async void ManageDeleteNote(object sender, string id)
+    private async void ManageDeleteNote(object sender, Guid id)
     {
         _viewModel.RemoveNote(id);
         await DisplayAlert("Avviso", "Nota rimossa correttamente", "OK");
     }
 
     /// <summary>
-    /// Gestore dell'evento OnError
+    /// 
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="args"></param>
     private async void ManageOnError(object sender, string args)
     {
+        await Navigation.PopAsync();
         await DisplayAlert("Errore", args, "OK");
     }
-
 }

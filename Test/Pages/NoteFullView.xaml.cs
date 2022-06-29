@@ -1,4 +1,4 @@
-using Test.Models;
+using NotesContracts;
 using Test.ViewModels;
 
 namespace Test.Pages;
@@ -24,4 +24,15 @@ public partial class NoteFullView : ContentPage
 
 		InitializeComponent();
 	}
+
+    void OnCategoriesIndexChanged(object sender, EventArgs e)
+    {
+        var picker = (Picker)sender;
+        int selectedIndex = picker.SelectedIndex;
+
+        if (selectedIndex != -1)
+        {
+			_viewModel.SetCurrentCategory((Categoria)picker.ItemsSource[selectedIndex]);
+        }
+    }
 }

@@ -5,10 +5,11 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:m="clr-namespace:Test.ViewModels"
-             xmlns:n="clr-namespace:Test.Models"
+             xmlns:n="clr-namespace:NotesContracts;assembly=NotesContracts"
              xmlns:pages="clr-namespace:Test.Pages"
              x:Class="Test.MainPage"
-             x:DataType="m:NotaViewModel">
+             x:DataType="m:NotaViewModel"
+             >
 
     <Grid
         Margin="10" RowSpacing="10">
@@ -31,56 +32,56 @@
             Grid.Row="1"            
             x:Name="collectionView"
             ItemsSource="{Binding Notes}">
-            
+
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="n:Note">
                     <Grid 
                         Margin="0,5,0,0"
                         ColumnSpacing="10"
                         ColumnDefinitions="*, Auto, Auto"
-                        BackgroundColor="LightGoldenrodYellow">
+                        BackgroundColor="{StaticResource NoteItemColor}">
                         <Label
+                            x:Name="testlbl2"
                             Grid.Column="0"
                             Margin="10,0,0,0"
-                            Text="{Binding Text}"
+                            Text="{Binding Title}"
                             TextColor="Black"
                             HorizontalOptions="StartAndExpand" 
                             VerticalOptions="Center"/>
-                        <ImageButton
-                            Scale="0.4"
+                        <Button
+                            Style="{StaticResource Key=fs_btn}"
                             Grid.Column="1"
                             Margin="0,0,1,0"
-                            Source="edit.svg"
+                            Text="&#xf304;"
+                            TextColor="{StaticResource Yellow100Accent}"
                             Command="{Binding EditNoteCommand, Source={RelativeSource AncestorType={x:Type m:NotaViewModel}}}"
-                            CommandParameter="{Binding .}"
-                            HorizontalOptions="End"
-                            VerticalOptions="Center"
-                            SemanticProperties.Description="{Binding Id}"
-                            SemanticProperties.Hint="{Binding Text}"/>
-                        <ImageButton
-                            Scale="0.8"
+                            CommandParameter="{Binding .}"/>
+                        <Button
+                            Style="{StaticResource Key=fs_btn}"
                             Grid.Column="2"
                             Margin="0,0,2,0"
-                            Source="remove.svg"
+                            Text="&#xf057;"
+                            TextColor="{StaticResource StdButtonRed}"
                             Command="{Binding DeleteNoteCommand, Source={RelativeSource AncestorType={x:Type m:NotaViewModel}}}"
-                            CommandParameter="{Binding Id}"
-                            HorizontalOptions="End"
-                            VerticalOptions="Center"
-                            SemanticProperties.Description="{Binding Id}"/>
+                            CommandParameter="{Binding Id}"/>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <ImageButton
+        <Button
+            Style="{StaticResource Key=fs_btn}"
             Grid.Row="0"
             Grid.RowSpan="99"
-            Scale="0.85"
-            Source="add.svg"
+            Text="&#xf055;"
+            Scale="2.5"
+            AnchorX="0.48"
+            AnchorY="0.48"
+            TextColor="Green"
             HorizontalOptions="End"
             VerticalOptions="End"
             Clicked="Event_addNote">
-        </ImageButton>
+        </Button>
 
     </Grid>
 </ContentPage>

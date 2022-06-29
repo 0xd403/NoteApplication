@@ -1,54 +1,103 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:Test.Models"
+             xmlns:models="clr-namespace:NotesContracts;assembly=NotesContracts"
              xmlns:vm="clr-namespace:Test.ViewModels"
              x:Class="Test.Pages.NoteFullView"
              x:DataType="vm:NoteFullViewModel"
              Title="Inserisci una nota">
     <Grid
-        Margin="20"
         RowSpacing="5">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="5*"/>
         </Grid.ColumnDefinitions>
 
-        <Editor
+        <Label
             Grid.Row="0"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
-            x:Name="NoteText"
-            Text="{Binding CurrentNote.Text}"
-            BackgroundColor="White"
-            TextColor="Black"
-            HorizontalTextAlignment="Center"
-            HorizontalOptions="CenterAndExpand"
-            HeightRequest="250"
-            Placeholder="Inserisci il testo della nota"/>
+            HorizontalOptions="StartAndExpand"
+            VerticalOptions="FillAndExpand"
+            Text="Titolo"
+            TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
 
-        <Button
+        <Entry
+            Grid.Row="0"
+            Grid.Column="1"
+            x:Name="Input_title"
+            Placeholder="inserisci il titolo"
+            Text="{Binding CurrentNote.Title}"
+            Margin="5, 0"
+            MaxLength="60"
+            VerticalOptions="FillAndExpand"
+            HorizontalTextAlignment="Center"
+            TextColor="Black"
+            BackgroundColor="LightGray"/>
+
+        <Label
             Grid.Row="1"
             Grid.Column="0"
-            HorizontalOptions="FillAndExpand"
-            Text="Conferma"
-            BackgroundColor="Green"
+            Grid.ColumnSpan="99"
+            Text="Corpo della nota"/>
+
+        <Editor
+            Grid.Row="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="99"
+            x:Name="Input_text"
+            Placeholder="Inserici il corpo della nota"
+            Text="{Binding CurrentNote.Text}"
             TextColor="Black"
-            Command="{Binding ConfirmCommand}"/>
+            BackgroundColor="LightGray"
+            HorizontalTextAlignment="Center"
+            MaxLength="1500"/>
+
+        <Label
+            Grid.Row="3"
+            Grid.Column="0"
+            Text="Categoria"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"/>
+
+        <Picker
+            x:Name="CategoryPicker"
+            Grid.Row="3"
+            Grid.Column="1"            
+            ItemsSource="{Binding Categories}"
+            ItemDisplayBinding="{Binding Description}"
+            SelectedItem="{Binding CurrentCategory}"
+            BackgroundColor="White"
+            TextColor="Black"
+            SelectedIndexChanged="OnCategoriesIndexChanged" >
+        </Picker>
 
         <Button
-            Grid.Row="1"
-            Grid.Column="1"
-            HorizontalOptions="FillAndExpand"
-            Text="Annulla"
-            Command="{Binding ExitCommand}"
-            BackgroundColor="Red"
-            TextColor="Black"/>
+            Style="{StaticResource Key=fs_btn}"
+            Grid.Row="4"
+            Grid.Column="0"
+            Text="&#xf058;"
+            TextColor="Green"
+            Scale="2.5"
+            Command="{Binding ConfirmCommand}"
+            CommandParameter="{Binding CurrentNote}">
+        </Button>
 
+        <Button
+            Style="{StaticResource Key=fs_btn}"
+            Grid.Row="4"
+            Grid.Column="1"
+            Text="&#xf00d;"
+            Command="{Binding ExitCommand}"
+            TextColor="Red"
+            Scale="2.5"
+            Margin="20"/>
     </Grid>
 </ContentPage>

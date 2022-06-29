@@ -17,6 +17,18 @@
     <Color x:Key="Gray600">#404040</Color>
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
+    
+    <!-- customizations -->
+    <Color x:Key="StdFgLight">#333333</Color>
+    <Color x:Key="StdBgLight">#eeeeee</Color>
+    
+    <Color x:Key="StdFgDark">#eeeeee</Color>
+    <Color x:Key="StdBgDark">#222222</Color>
+
+    <Color x:Key="StdButtonRed">#C91515</Color>
+
+    <Color x:Key="NoteItemColor">#FFF7D1</Color>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>

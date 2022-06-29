@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Input;
-using Test.Models;
+using NotesContracts;
 
 namespace Test.ViewModels;
 
@@ -20,16 +20,18 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Viene chiamato quando l'utente inizia la rimozione di una nota cliccando il tasto remove (icona corce) della MainPage
     /// </summary>
-    public EventHandler<string>? OnStartDelete;
+    public EventHandler<Guid>? OnStartDelete;
 
     /// <summary>
-    /// Viene chiamato quando si verifica un errore
+    /// Generato quando si verificano errori di connessione/comunicazione con l'API
     /// </summary>
-    public EventHandler<string>? OnError;
+    public EventHandler<string>? OnConnectionError;
 
     private List<Note> _note;
 
     private HttpClient client;
+
+    private List<Categoria> _categories;
 
     private readonly string api_key = "deeb9b705bfb40119fc4e494fb7b8529";
 
@@ -61,17 +63,9 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Viene chiamato alla pressione del tasto remove nella MainPage e chiama l'evento OnStartDelete
     /// </summary>
-    public ICommand DeleteNoteCommand => new Command<string>(
+    public ICommand DeleteNoteCommand => new Command<Guid>(
         (e) => OnStartDelete?.Invoke(null, e));
 
-    /// <summary>
-    /// Chiama l'evento OnError con eventuali parametri
-    /// </summary>
-    /// <param name="args"></param>
-    private void ThrowErrorEvent(string args)
-    {
-        OnError?.Invoke(null, args);
-    }
 
     /// <summary>
     /// Carica le note all'avvio dell'applicazione
@@ -86,24 +80,21 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         }
         catch
         {
-            ThrowErrorEvent("Impossibile connettersi a internet");
+            OnConnectionError?.Invoke(null, "Non sei connesso a internet");
         }
-        finally
+        if (result.IsSuccessStatusCode)
         {
-            if (result.IsSuccessStatusCode)
-            {
-                var json = result.Content.ReadAsStringAsync().Result;
-                var response = JsonSerializer.Deserialize<List<Note>>(json);
+            var json = result.Content.ReadAsStringAsync().Result;
+            var response = JsonSerializer.Deserialize<List<Note>>(json);
 
-                foreach (var i in response)
-                    _note.Add(i);
+            foreach (var i in response)
+                _note.Add(i);
 
-                OnPropertyChanged(nameof(Notes));
-            }
-            else
-            {
-                ThrowErrorEvent("Impossibile caricare le note");
-            }
+            OnPropertyChanged(nameof(Notes));
+        }
+        else
+        {
+            OnConnectionError?.Invoke(null, "Errore di connessione");
         }
     }
 
@@ -113,39 +104,54 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     /// <param name="new_note"></param>
     public void AddNote(Note new_note)
     {
-        var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/addNote");
-        var json = JsonSerializer.Serialize(new_note);
-        var payload = new StringContent(json, Encoding.UTF8, "application/json");
-        var request = client.PostAsync(endpoint, payload).Result;
+        HttpResponseMessage result = null;
+        try
+        {
+            var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/addNote");
+            var json = JsonSerializer.Serialize(new_note);
+            var payload = new StringContent(json, Encoding.UTF8, "application/json");
 
-        if (request.IsSuccessStatusCode)
+            result = client.PostAsync(endpoint, payload).Result;
+        }
+        catch
+        {
+            OnConnectionError?.Invoke(null, "Non sei connesso a internet");
+        }
+        if (result.IsSuccessStatusCode)
         {
             _note.Add(new_note);
             OnPropertyChanged(nameof(Notes));
         }
         else
         {
-            ThrowErrorEvent("Impossibile aggiungere la nota");
-        }  
+            OnConnectionError?.Invoke(null, "Errore di connessione");
+        }
     }
 
     /// <summary>
     /// Rimuove una nota e aggiorna il CollectionView
     /// </summary>
     /// <param name="id"></param>
-    public void RemoveNote(string id)
+    public void RemoveNote(Guid id)
     {
-        var endpoint = new Uri($"https://mynotesapi.azure-api.net/v1/deleteNote/{id}");
-        var response = client.DeleteAsync(endpoint).Result;
-
-        if (response.IsSuccessStatusCode)
+        HttpResponseMessage result = null;
+        try
+        {
+            var endpoint = new Uri($"https://mynotesapi.azure-api.net/v1/deleteNote/{id}");
+            result = client.DeleteAsync(endpoint).Result;
+        }
+        catch
+        {
+            OnConnectionError?.Invoke(null, "Non sei connesso a internet");
+        }
+        if (result.IsSuccessStatusCode)
         {
             _note.Remove(_note.Find(i => i.Id == id));
             OnPropertyChanged(nameof(Notes));
         }
         else
         {
-            ThrowErrorEvent("Impossibile rimuovere la nota");
+            OnConnectionError?.Invoke(null, "Errore di connessione");
         }
     }
 
@@ -154,35 +160,44 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     /// <param name="id"></param>
     /// <param name="new_text"></param>
-    public void EditNote(string id, string new_text)
+    public void EditNote(Note edited_note)
     {
-        var note = _note.Find(i => i.Id == id);
-
-        if (note != null)
+        HttpResponseMessage result = null;
+        Note note = null;
+        try
         {
-            var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/editNote");
-            var json = JsonSerializer.Serialize<Note>(new Note() { Id=id, Text=new_text, CreatedDate=DateTime.Now});
-            var payload = new StringContent(json, Encoding.UTF8, "application/json");
-            var request = client.PostAsync(endpoint, payload).Result;
+            note = _note.Find(i => i.Id == edited_note.Id);
 
-            if (request.IsSuccessStatusCode)
+            if (note != null)
             {
-                var reponse = request.Content.ReadAsStringAsync().Result;
-                var deserialized_note = JsonSerializer.Deserialize<Note>(reponse);
-                note.Id = deserialized_note.Id;
-                note.Text = deserialized_note.Text;
-                note.CreatedDate = deserialized_note.CreatedDate;
-                OnPropertyChanged(nameof(Notes));
+                var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/editNote");
+                var json = JsonSerializer.Serialize<Note>(edited_note);
+                var payload = new StringContent(json, Encoding.UTF8, "application/json");
+                result = client.PostAsync(endpoint, payload).Result;
             }
             else
             {
-                ThrowErrorEvent("Impossibile modificare la nota");
+                OnConnectionError?.Invoke(null, "Nota inesistente");
             }
-            
+        }
+        catch
+        {
+            OnConnectionError?.Invoke(null, "Non sei connesso a internet");
+        }
+        if (result.IsSuccessStatusCode)
+        {
+            var reponse = result.Content.ReadAsStringAsync().Result;
+            var deserialized_note = JsonSerializer.Deserialize<Note>(reponse);
+            note.Id = deserialized_note.Id;
+            note.CategoryID = deserialized_note.CategoryID;
+            note.Title = deserialized_note.Title;
+            note.Text = deserialized_note.Text;
+            note.CreatedDate = deserialized_note.CreatedDate;
+            OnPropertyChanged(nameof(Notes));
         }
         else
         {
-            ThrowErrorEvent("Nota inesistente");
+            OnConnectionError?.Invoke(null, "Errore di connessione");
         }
     }
 

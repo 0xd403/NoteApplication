@@ -7,21 +7,38 @@
     xmlns:pages="clr-namespace:Test.Pages"
     Shell.FlyoutBehavior="Flyout">
 
-    <FlyoutItem 
-        Title="MainPage" 
-        FlyoutIcon="">
-        
-            <ShellContent
-                Title="MainPage"
-                ContentTemplate="{DataTemplate local:MainPage}"
-                Route="MainPage"/>
-    
-    </FlyoutItem>
-
     <FlyoutItem
         Title="Login"
         FlyoutIcon="">
 
+        <ShellContent
+            Title="Accedi al tuo account"
+            ContentTemplate="{DataTemplate pages:LoginPage}"
+            Route="LoginPage"/>
+
     </FlyoutItem>
 
+
+    <FlyoutItem 
+        Title="MainPage" 
+        FlyoutIcon="">
+
+        <ShellContent
+                Title="MainPage"
+                ContentTemplate="{DataTemplate local:MainPage}"
+                Route="MainPage"/>
+
+    </FlyoutItem>
+
+    <FlyoutItem
+        Title="Reister"
+        FlyoutIcon="">
+
+        <ShellContent
+            Title="Crea un account"
+            ContentTemplate="{DataTemplate pages:RegisterPage}"
+            Route="RegisterPage"/>
+
+    </FlyoutItem>
+ 
 </Shell>

@@ -1,4 +1,4 @@
-using NotesContracts;
+using NotesContracts.NotesAPI.Responses;
 using Test.ViewModels;
 
 namespace Test.Pages;

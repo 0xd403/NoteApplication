@@ -3,7 +3,8 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Input;
-using NotesContracts;
+using NotesContracts.NotesAPI.Requests;
+using NotesContracts.NotesAPI.Responses;
 
 namespace Test.ViewModels;
 
@@ -33,13 +34,10 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
 
     private List<Categoria> _categories;
 
-    private readonly string api_key = "deeb9b705bfb40119fc4e494fb7b8529";
-
     public NotaViewModel()
     {
         _note = new();
         client = new HttpClient();
-        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", api_key);
     }
 
     public void Dispose()
@@ -67,35 +65,42 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         (e) => OnStartDelete?.Invoke(null, e));
 
 
+
+
     /// <summary>
     /// Carica le note all'avvio dell'applicazione
     /// </summary>
-    public void LoadStartupNotes()
+    public async void LoadStartupNotes()
     {
         HttpResponseMessage result = null;
+        var token = await SecureStorage.GetAsync("JWT_token");
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
         try
         {
-            var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/getNotes");
+            var endpoint = new Uri("https://localhost:7170/getNotes");
             result = client.GetAsync(endpoint).Result;
+
+            if (result.IsSuccessStatusCode)
+            {
+                var json = result.Content.ReadAsStringAsync().Result;
+                var response = JsonSerializer.Deserialize<List<Note>>(json);
+
+                foreach (var i in response)
+                    _note.Add(i);
+
+                OnPropertyChanged(nameof(Notes));
+            }
+            else
+            {
+                OnConnectionError?.Invoke(null, "Errore di connessione");
+            }
+
         }
         catch
         {
             OnConnectionError?.Invoke(null, "Non sei connesso a internet");
         }
-        if (result.IsSuccessStatusCode)
-        {
-            var json = result.Content.ReadAsStringAsync().Result;
-            var response = JsonSerializer.Deserialize<List<Note>>(json);
-
-            foreach (var i in response)
-                _note.Add(i);
-
-            OnPropertyChanged(nameof(Notes));
-        }
-        else
-        {
-            OnConnectionError?.Invoke(null, "Errore di connessione");
-        }
+        
     }
 
     /// <summary>
@@ -107,7 +112,13 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         HttpResponseMessage result = null;
         try
         {
-            var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/addNote");
+            var note = new RequestAddNote()
+            {
+                CategoryID = new_note.CategoryID,
+                Title = new_note.Title,
+                Text = new_note.Text
+            };
+            var endpoint = new Uri("https://localhost:7170/addNote");
             var json = JsonSerializer.Serialize(new_note);
             var payload = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -137,7 +148,7 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
         HttpResponseMessage result = null;
         try
         {
-            var endpoint = new Uri($"https://mynotesapi.azure-api.net/v1/deleteNote/{id}");
+            var endpoint = new Uri($"https://localhost:7170/deleteNote/{id}");
             result = client.DeleteAsync(endpoint).Result;
         }
         catch
@@ -170,7 +181,14 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
 
             if (note != null)
             {
-                var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/editNote");
+                var xx = new RequestEditNote()
+                {
+                    Id = edited_note.Id,
+                    CategoryID = edited_note.CategoryID,
+                    Title = edited_note.Title,
+                    Text = edited_note.Text
+                };
+                var endpoint = new Uri("https://localhost:7170/editNote");
                 var json = JsonSerializer.Serialize<Note>(edited_note);
                 var payload = new StringContent(json, Encoding.UTF8, "application/json");
                 result = client.PostAsync(endpoint, payload).Result;
@@ -192,7 +210,6 @@ public class NotaViewModel : INotifyPropertyChanged, IDisposable
             note.CategoryID = deserialized_note.CategoryID;
             note.Title = deserialized_note.Title;
             note.Text = deserialized_note.Text;
-            note.CreatedDate = deserialized_note.CreatedDate;
             OnPropertyChanged(nameof(Notes));
         }
         else

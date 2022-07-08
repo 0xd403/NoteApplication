@@ -5,7 +5,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:m="clr-namespace:Test.ViewModels"
-             xmlns:n="clr-namespace:NotesContracts;assembly=NotesContracts"
+             xmlns:n="clr-namespace:NotesContracts.NotesAPI.Responses;assembly=NotesContracts"
              xmlns:pages="clr-namespace:Test.Pages"
              x:Class="Test.MainPage"
              x:DataType="m:NotaViewModel"

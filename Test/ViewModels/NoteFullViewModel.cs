@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Text.Json;
 using System.Windows.Input;
-using NotesContracts;
+using NotesContracts.NotesAPI.Responses;
 
 namespace Test.ViewModels
 {
@@ -31,8 +31,6 @@ namespace Test.ViewModels
         private Note _currentNote;
 
         private Categoria _currentCategory;
-
-        private readonly string api_key = "deeb9b705bfb40119fc4e494fb7b8529";
 
         public NoteFullViewModel()
         {
@@ -122,14 +120,15 @@ namespace Test.ViewModels
             => OnExit?.Invoke(null, null);
 
         
-        private void GetCategories()
+        private async void GetCategories()
         {
             HttpClient client = new();
-            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", api_key);
+            var token = await SecureStorage.GetAsync("JWT_token");
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
             HttpResponseMessage result = null;
             try
             {
-                var endpoint = new Uri("https://mynotesapi.azure-api.net/v1/getCategories");
+                var endpoint = new Uri("https://localhost:7170/getCategories");
                 result = client.GetAsync(endpoint).Result;
             }
             catch

@@ -1,6 +1,6 @@
 ﻿using Test.ViewModels;
 using Test.Pages;
-using NotesContracts;
+using NotesContracts.NotesAPI.Responses;
 
 namespace Test;
 
@@ -29,7 +29,8 @@ public partial class MainPage : ContentPage, IDisposable
 
         InitializeComponent(); // disegno l'interfaccia
 
-		_viewModel.LoadStartupNotes(); // carico le note dal server    
+
+        LoginCheck();
     }
 
     public void Dispose()
@@ -45,6 +46,19 @@ public partial class MainPage : ContentPage, IDisposable
         GC.SuppressFinalize(this);
     }
 
+
+    private async void LoginCheck()
+    {
+        var x = await SecureStorage.GetAsync("isLogged");
+        if (x == "True")
+        {
+            _viewModel.LoadStartupNotes(); // carico le note dal server
+        }
+        else
+        {
+            await DisplayAlert("Avviso", "Devi prima loggarti", "OK");
+        }
+    }
 
     /// <summary>
     /// Permette di aggiungere una nuova nota.
